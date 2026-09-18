@@ -1,0 +1,112 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+
+    "baseName": {
+      "value": "ztassess"
+    },
+
+    "appClientId": {
+      "_comment": "Application (client) ID from the app registration's Overview page.",
+      "value": "00000000-0000-0000-0000-000000000000"
+    },
+
+    "servicePrincipalObjectId": {
+      "_comment": "OBJECT ID of the app's SERVICE PRINCIPAL - NOT the app's object id and NOT the client id. Find it: Entra > Enterprise applications > (your app) > Overview > Object ID. Or: az ad sp show --id <appClientId> --query id -o tsv",
+      "value": "00000000-0000-0000-0000-000000000000"
+    },
+
+    "runbookContentUri": {
+      "_comment": "Raw, publicly reachable URL of ztassessment-runbook-cert.ps1 (e.g. raw.githubusercontent.com URL, or a blob URL with SAS token).",
+      "value": "https://raw.githubusercontent.com/<org>/<repo>/main/ztassessment-runbook-cert.ps1"
+    },
+
+    "vmSetupScriptUri": {
+      "_comment": "Raw, publicly reachable URL of vm-setup.ps1 - the VM extension downloads and runs it.",
+      "value": "https://raw.githubusercontent.com/<org>/<repo>/main/vm-setup.ps1"
+    },
+
+    "orchestratorContentUri": {
+      "_comment": "Raw URL of ztassessment-orchestrator.ps1. This is the runbook the SCHEDULE calls: it starts the VM, runs the assessment on the worker, then deallocates the VM.",
+      "value": "https://raw.githubusercontent.com/<org>/<repo>/main/ztassessment-orchestrator.ps1"
+    },
+
+    "containerName": {
+      "value": "ztassessment"
+    },
+
+    "reportRetentionDays": {
+      "_comment": "Blob lifecycle auto-delete. Set 0 to keep reports forever.",
+      "value": 90
+    },
+
+    "services": {
+      "_comment": "Services for scheduled runs. All six pillars. Remove SharePointOnline / AipService if you don't want their extra roles and permissions.",
+      "value": [ "Graph", "Azure", "ExchangeOnline", "SecurityCompliance", "SharePointOnline", "AipService" ]
+    },
+
+    "scheduleStartTime": {
+      "_comment": "First scheduled run. ISO 8601 with offset, MUST be more than 5 minutes in the future at deploy time or the deployment fails.",
+      "value": "2026-09-01T02:00:00+00:00"
+    },
+
+    "scheduleIntervalMonths": {
+      "value": 1
+    },
+
+    "certificateName": {
+      "value": "ZT-AppCert"
+    },
+
+    "certificateSubject": {
+      "_comment": "Optionally include the customer name, e.g. CN=ZeroTrustAssessment-Contoso",
+      "value": "CN=ZeroTrustAssessment"
+    },
+
+    "certificateValidityMonths": {
+      "value": 24
+    },
+
+    "vmSize": {
+      "_comment": "D4s_v5 (4 vCPU / 16 GB) is comfortable; D2s_v5 suffices for small tenants.",
+      "value": "Standard_D4s_v5"
+    },
+
+    "vmAdminUsername": {
+      "value": "ztadmin"
+    },
+
+    "vmAdminPassword": {
+      "_comment": "Do NOT store a real password in this file. Pass at deploy time: --parameters vmAdminPassword=<value>, or reference a Key Vault secret here instead.",
+      "value": ""
+    },
+
+    "vnetAddressPrefix": {
+      "value": "10.60.0.0/24"
+    },
+
+    "baseTags": {
+      "_comment": "Applied to ALL resources (the lighter five). Fill in real values - tag-value policies often reject empty strings.",
+      "value": {
+        "created by": "deploying.person@company.com",
+        "environment": "test",
+        "service": "security-assessment",
+        "sme": "service.expert@company.com",
+        "used-by": "security-team"
+      }
+    },
+
+    "vmExtraTags": {
+      "_comment": "Merged on top of baseTags for the VM, NIC and VM extensions only - giving those resources the full ten tags.",
+      "value": {
+        "Application": "Zero Trust Assessment",
+        "backup-policy": "none",
+        "bcp-priority": "low",
+        "Owner": "service.owner@company.com",
+        "patch-schedule": "default",
+        "power-profile": "always-on"
+      }
+    }
+  }
+}
